@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 // import 'package:flutter_inventory/models/apiitem.dart';
 import 'package:flutter_inventory/models/item.dart';
+import 'package:flutter_inventory/screens/item_detail_screen.dart';
 import 'package:flutter_inventory/widgets/item_card.dart';
 import 'package:provider/provider.dart';
 // import '../models/item.dart';
@@ -247,29 +248,30 @@ Future<void> _openEdit(BuildContext context, Item item) async {
                 )
               else
                 SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 100),
-                  sliver: SliverGrid(
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 10,
-                      mainAxisSpacing: 10,
-                      childAspectRatio: 0.72,
-                    ),
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final item = items[index];
-                        return ItemCard(
-                          item: item,
-                          onTap: (){},
-                          onEdit: () => _openEdit(context, item),
-                          onDelete: () => _confirmDelete(context, item),
-                        );
-                      },
-                      childCount: items.length,
-                    ),
-                  ),
-                ),
+  padding: const EdgeInsets.fromLTRB(12, 0, 12, 100),
+  sliver: SliverList(
+    delegate: SliverChildBuilderDelegate(
+      (context, index) {
+        final item = items[index];
+        return ItemTile(
+          item: item,
+          onTap: () {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => ItemDetailScreen(item: item),
+    ),
+  );
+},
+
+          onEdit: () => _openEdit(context, item),
+          onDelete: () => _confirmDelete(context, item),
+        );
+      },
+      childCount: items.length,
+    ),
+  ),
+),
             ],
           );
         },
