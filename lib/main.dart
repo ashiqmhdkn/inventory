@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'models/item.dart';
 // import 'models/item.g.dart';
 import 'providers/item_provider.dart';
-import 'screens/home_screen.dart';
+import 'screens/main_shell.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,7 +29,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData.dark(),
-      home: const HomeScreen(),
+      home: const MainShell(),
     );
   }
 }

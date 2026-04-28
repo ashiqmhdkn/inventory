@@ -114,7 +114,7 @@ Future<void> _openEdit(BuildContext context, Item item) async {
             ),
             const SizedBox(width: 8),
             const Text(
-              'Shahid Idea',
+              'Store',
               style: TextStyle(
                 fontFamily: 'Syne',
                 fontWeight: FontWeight.w800,

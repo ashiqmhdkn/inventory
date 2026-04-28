@@ -10,13 +10,13 @@ class ItemDetailScreen extends StatelessWidget {
 
   String get _stockStatus {
     if (item.stock == 0) return 'Out of stock';
-    if (item.stock <= 5) return 'Low stock';
+    if ((item.stock ?? 0) <= 5) return 'Low stock';
     return 'In stock';
   }
 
   Color _stockColor(BuildContext context) {
     if (item.stock == 0) return const Color(0xFFE24B4A);
-    if (item.stock <= 5) return const Color(0xFFEF9F27);
+   if ((item.stock ?? 0) <= 5) return const Color(0xFFEF9F27);
     return const Color(0xFF1D9E75);
   }
 
@@ -33,14 +33,15 @@ class ItemDetailScreen extends StatelessWidget {
           children: [
             AspectRatio(
               aspectRatio: 16 / 9,
-              child: Image.file(
-          File(item.image),
+              child: item.image != null
+    ?Image.file(
+          File(item.image!),
                 fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) => Container(
                   color: Colors.grey.shade200,
                   child: const Icon(Icons.image, size: 60, color: Colors.grey),
                 ),
-              ),
+              ): const Icon(Icons.image_not_supported, size: 80),
             ),
             Padding(
               padding: const EdgeInsets.all(20),

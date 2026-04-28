@@ -18,8 +18,10 @@ class ItemTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool isOutOfStock = item.stock <= 0;
-    final bool isLowStock = item.stock > 0 && item.stock <= 5;
+    final bool isOutOfStock = (item.stock ?? 0) <= 0;
+    final bool isLowStock =
+    (item.stock ?? 0) > 0 &&
+    (item.stock ?? 0) <= 5;
 
     String stockLabel = isOutOfStock
         ? 'Out of stock'
@@ -36,14 +38,15 @@ class ItemTile extends StatelessWidget {
     return ListTile(
       onTap: onTap,
       leading: CircleAvatar(
-        child: Image.file(
-          File(item.image),
+        child: item.image != null
+    ?   Image.file(
+          File(item.image!),
           width: 60,
           height: 60,
           fit: BoxFit.cover,
           errorBuilder: (_, __, ___) =>
               const Icon(Icons.broken_image, color: Colors.grey),
-        ),
+        ) : const Icon(Icons.image_not_supported),
       ),
       title: Text(
         item.title,
@@ -68,7 +71,7 @@ class ItemTile extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
             Text(
-            '\$${item.price.toStringAsFixed(0)}',
+            'price:${item.price.toStringAsFixed(0)}',
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,

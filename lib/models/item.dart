@@ -5,25 +5,47 @@ part 'item.g.dart';
 @HiveType(typeId: 0)
 class Item extends HiveObject {
   @HiveField(0)
-  late String id;
+  String id;
 
   @HiveField(1)
-  late String title;
+  String title;
 
   @HiveField(2)
-  late String image; // absolute path on device
+  String? image;
 
   @HiveField(3)
-  late double price;
+  double price;
 
   @HiveField(4)
-  late int stock;
+  double? mrpPrice;
+
+  @HiveField(5)
+  int? stock;
 
   Item({
     required this.id,
     required this.title,
-    required this.image,
+    this.image,
     required this.price,
-    required this.stock,
+    this.mrpPrice,
+    this.stock,
   });
+
+  Item copyWith({
+    String? id,
+    String? title,
+    String? image,
+    double? price,
+    double? mrpPrice,
+    int? stock,
+  }) {
+    return Item(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      image: image ?? this.image,
+      price: price ?? this.price,
+      mrpPrice: mrpPrice ?? this.mrpPrice,
+      stock: stock ?? this.stock,
+    );
+  }
 }
