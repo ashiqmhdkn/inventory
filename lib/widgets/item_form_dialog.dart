@@ -13,8 +13,7 @@ class ItemFormBottomSheet extends StatefulWidget {
   });
 
   @override
-  State<ItemFormBottomSheet> createState() =>
-      _ItemFormBottomSheetState();
+  State<ItemFormBottomSheet> createState() => _ItemFormBottomSheetState();
 }
 
 class _ItemFormBottomSheetState extends State<ItemFormBottomSheet> {
@@ -44,9 +43,7 @@ class _ItemFormBottomSheetState extends State<ItemFormBottomSheet> {
     );
 
     _mrpCtrl = TextEditingController(
-      text: item?.mrpPrice != null
-          ? item!.mrpPrice!.toStringAsFixed(0)
-          : '',
+      text: item?.mrpPrice != null ? item!.mrpPrice!.toStringAsFixed(0) : '',
     );
 
     _stockCtrl = TextEditingController(
@@ -83,16 +80,43 @@ class _ItemFormBottomSheetState extends State<ItemFormBottomSheet> {
     }
 
     final mrpText = _mrpCtrl.text.trim();
+    Navigator.pop(
+      context,
+      Item(
+        id: "",
+        isMarket: true,
+        price: double.parse(_priceCtrl.text.trim()),
+        title: _titleCtrl.text.trim(),
+        image: itemImage,
+        mrpPrice: _mrpCtrl.text.trim().isEmpty
+            ? null
+            : double.parse(_mrpCtrl.text.trim()),
+        stock: _stockCtrl.text.trim().isEmpty
+            ? null
+            : int.parse(_stockCtrl.text.trim()),
+      ),
+    );
 
-    Navigator.pop(context, {
-      'title': _titleCtrl.text.trim(),
-      'image': itemImage,
-      'price': double.parse(_priceCtrl.text.trim()),
-      'mrpPrice': mrpText.isEmpty ? null : double.parse(mrpText),
-      'stock': _stockCtrl.text.trim().isEmpty
-          ? null
-          : int.parse(_stockCtrl.text.trim()),
-    });
+    // Navigator.pop(context, {
+    //   Item(
+    //     id: "",
+    //     isMarket: true,
+    //     price: double.parse(_priceCtrl.text.trim()),
+    //     title: _titleCtrl.text.trim(),
+    //     image: itemImage,
+    //     mrpPrice: mrpText.isEmpty ? null : double.parse(mrpText),
+    //     stock: _stockCtrl.text.trim().isEmpty
+    //         ? null
+    //         : int.parse(_stockCtrl.text.trim()),
+    //   )
+    // 'title': _titleCtrl.text.trim(),
+    // 'image': itemImage,
+    // 'price': double.parse(_priceCtrl.text.trim()),
+    // 'mrpPrice': mrpText.isEmpty ? null : double.parse(mrpText),
+    // 'stock': _stockCtrl.text.trim().isEmpty
+    //     ? null
+    //     : int.parse(_stockCtrl.text.trim()),
+    // 'isMarket': true,
   }
 
   @override
@@ -120,9 +144,7 @@ class _ItemFormBottomSheetState extends State<ItemFormBottomSheet> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-
                 const SizedBox(height: 20),
-
                 TextFormField(
                   controller: _titleCtrl,
                   decoration: const InputDecoration(
@@ -132,9 +154,7 @@ class _ItemFormBottomSheetState extends State<ItemFormBottomSheet> {
                   validator: (v) =>
                       v == null || v.trim().isEmpty ? "Required" : null,
                 ),
-
                 const SizedBox(height: 16),
-
                 Row(
                   children: [
                     Expanded(
@@ -152,9 +172,7 @@ class _ItemFormBottomSheetState extends State<ItemFormBottomSheet> {
                             v == null || v.isEmpty ? "Required" : null,
                       ),
                     ),
-
                     const SizedBox(width: 12),
-
                     Expanded(
                       child: TextFormField(
                         controller: _mrpCtrl,
@@ -171,9 +189,7 @@ class _ItemFormBottomSheetState extends State<ItemFormBottomSheet> {
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 16),
-
                 TextFormField(
                   controller: _stockCtrl,
                   decoration: const InputDecoration(
@@ -185,9 +201,7 @@ class _ItemFormBottomSheetState extends State<ItemFormBottomSheet> {
                     FilteringTextInputFormatter.digitsOnly,
                   ],
                 ),
-
                 const SizedBox(height: 16),
-
                 GestureDetector(
                   onTap: _pickImage,
                   child: Container(
@@ -239,9 +253,7 @@ class _ItemFormBottomSheetState extends State<ItemFormBottomSheet> {
                           ),
                   ),
                 ),
-
                 const SizedBox(height: 24),
-
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -249,7 +261,6 @@ class _ItemFormBottomSheetState extends State<ItemFormBottomSheet> {
                     child: Text(_isEdit ? "Save Changes" : "Add Item"),
                   ),
                 ),
-
                 const SizedBox(height: 12),
               ],
             ),

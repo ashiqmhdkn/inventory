@@ -1,6 +1,10 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
 
 part of 'item.dart';
 
+// **************************************************************************
+// TypeAdapterGenerator
+// **************************************************************************
 
 class ItemAdapter extends TypeAdapter<Item> {
   @override
@@ -9,45 +13,38 @@ class ItemAdapter extends TypeAdapter<Item> {
   @override
   Item read(BinaryReader reader) {
     final numOfFields = reader.readByte();
-
     final fields = <int, dynamic>{
-      for (int i = 0; i < numOfFields; i++)
-        reader.readByte(): reader.read(),
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-
     return Item(
       id: fields[0] as String,
       title: fields[1] as String,
       image: fields[2] as String?,
-      price: (fields[3] as num).toDouble(),
-      mrpPrice: (fields[4] as num?)?.toDouble() ??
-          (fields[3] as num).toDouble(),
+      price: fields[3] as double,
+      mrpPrice: fields[4] as double?,
       stock: fields[5] as int?,
+      isMarket: fields[6] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, Item obj) {
     writer
-      ..writeByte(6)
-
+      ..writeByte(7)
       ..writeByte(0)
       ..write(obj.id)
-
       ..writeByte(1)
       ..write(obj.title)
-
       ..writeByte(2)
       ..write(obj.image)
-
       ..writeByte(3)
       ..write(obj.price)
-
       ..writeByte(4)
       ..write(obj.mrpPrice)
-
       ..writeByte(5)
-      ..write(obj.stock);
+      ..write(obj.stock)
+      ..writeByte(6)
+      ..write(obj.isMarket);
   }
 
   @override
