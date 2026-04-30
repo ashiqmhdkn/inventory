@@ -4,15 +4,17 @@ import 'package:flutter_inventory/models/apiitem.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ItemFormBottomSheet extends ConsumerStatefulWidget{
+class ItemFormBottomSheet extends ConsumerStatefulWidget {
   final Item? item;
 
- ItemFormBottomSheet({super.key,
+  ItemFormBottomSheet({
+    super.key,
     this.item,
   });
 
   @override
-  ConsumerState<ItemFormBottomSheet> createState() => _ItemFormBottomSheetState();
+  ConsumerState<ItemFormBottomSheet> createState() =>
+      _ItemFormBottomSheetState();
 }
 
 class _ItemFormBottomSheetState extends ConsumerState<ItemFormBottomSheet> {
@@ -39,7 +41,6 @@ class _ItemFormBottomSheetState extends ConsumerState<ItemFormBottomSheet> {
     _priceCtrl = TextEditingController(
       text: item != null ? item.price.toStringAsFixed(0) : '',
     );
-
 
     _stockCtrl = TextEditingController(
       text: item?.stock?.toString() ?? '',
@@ -144,7 +145,7 @@ class _ItemFormBottomSheetState extends ConsumerState<ItemFormBottomSheet> {
                       v == null || v.trim().isEmpty ? "Required" : null,
                 ),
                 const SizedBox(height: 16),
-                Expanded(
+                Flexible(
                   child: TextFormField(
                     controller: _priceCtrl,
                     decoration: const InputDecoration(

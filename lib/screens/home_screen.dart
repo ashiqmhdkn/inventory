@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_inventory/providers/auth_provider.dart';
 import 'package:flutter_inventory/models/apiitem.dart';
@@ -28,13 +27,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     _searchController.dispose();
     super.dispose();
   }
-@override
-void initState() {
-  super.initState();
-  Future.microtask(() {
-    ref.read(itemProvider.notifier).build();
-  });
-}
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      ref.read(itemProvider.notifier).build();
+    });
+  }
   // ---------------- ADD ----------------
   // Future<void> _openAdd() async {
   //   final result = await showModalBottomSheet<Item>(
@@ -57,9 +57,22 @@ void initState() {
   //   }
   // }
   Future<void> _openAdd() async {
-    final result = await openItemFormBottomSheet(context);
+    final result =
+        //  await showModalBottomSheet<Item>(
+        //   context: context,
+        //   isScrollControlled: true,
+        //   shape: const RoundedRectangleBorder(
+        //     borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        //   ),
+        //   builder: (_) => ItemFormBottomSheet(),
+        // );
+        await openItemFormBottomSheet(context);
 
     if (result != null && mounted) {
+      print(result.title);
+      print(result.image);
+      print(result.price);
+      print(result.stock);
       await ref.read(itemProvider.notifier).createItem(
             name: result.title,
             image: result.image,
@@ -74,6 +87,10 @@ void initState() {
     final result = await openItemFormBottomSheet(context, item: item);
 
     if (result != null && mounted) {
+      print(result.title);
+      print(result.image);
+      print(result.price);
+      print(result.stock);
       await ref.read(itemProvider.notifier).updateItem(
             id: item.id,
             name: result.title,

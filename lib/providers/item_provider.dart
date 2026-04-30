@@ -2,11 +2,10 @@ import 'package:flutter_inventory/models/apiitem.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/item_api_service.dart';
 
-
 class ItemProvider extends AsyncNotifier<List<Item>> {
   @override
   Future<List<Item>> build() async {
-    return getItems();
+    return getApiItems();
   }
 
   // ---------------- CREATE ----------------
@@ -14,18 +13,26 @@ class ItemProvider extends AsyncNotifier<List<Item>> {
     required String name,
     required double price,
     int? quantity,
-  String? image,
+    String? image,
   }) async {
+    print("..........create..............");
+    print(name);
+    print(price);
+    print(quantity);
+    print(image);
     try {
-      final success = await createItem(
-        name: name,
-        price: price,
-        quantity: quantity,
-        image: image,
+      final success = await createApiItem(
+        Item(
+          id: "",
+          title: name,
+          price: price,
+          stock: quantity,
+          image: image,
+        ),
       );
-
+      print(success);
       if (success) {
-        state = await AsyncValue.guard(() => getItems());
+        state = await AsyncValue.guard(() => getApiItems());
       }
 
       return success;
@@ -43,17 +50,24 @@ class ItemProvider extends AsyncNotifier<List<Item>> {
     String? image,
   }) async {
     try {
-      final success = await updateItem(
-        id: id,
-        name: name,
-        price: price,
-        quantity: quantity,
-        image: image,
+      print("..........update..............");
+      print(name);
+      print(price);
+      print(quantity);
+      print(image);
+      final success = await updateApiItem(
+        Item(
+          id: id,
+          title: name,
+          price: price,
+          stock: quantity,
+          image: image,
+        ),
       );
 
       if (success) {
         state = const AsyncValue.loading();
-        state = await AsyncValue.guard(() => getItems());
+        state = await AsyncValue.guard(() => getApiItems());
       }
 
       return success;
@@ -69,7 +83,7 @@ class ItemProvider extends AsyncNotifier<List<Item>> {
 
       if (success) {
         state = const AsyncValue.loading();
-        state = await AsyncValue.guard(() => getItems());
+        state = await AsyncValue.guard(() => getApiItems());
       }
 
       return success;
@@ -81,7 +95,9 @@ class ItemProvider extends AsyncNotifier<List<Item>> {
   // ---------------- REFRESH ----------------
   Future<void> refresh() async {
     state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() => getItems());
+    state = await AsyncValue.guard(() => getApiItems());
   }
 }
-final itemProvider = AsyncNotifierProvider<ItemProvider, List<Item>>(() => ItemProvider());
+
+final itemProvider =
+    AsyncNotifierProvider<ItemProvider, List<Item>>(() => ItemProvider());
