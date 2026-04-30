@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/item.dart';
+import '../models/apiitem.dart';
 import '../widgets/item_form_dialog.dart';
 
 Future<Item?> openItemFormBottomSheet(BuildContext context, {Item? item}) {

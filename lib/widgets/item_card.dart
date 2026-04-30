@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter_inventory/models/item.dart';
+import 'package:flutter_inventory/models/apiitem.dart';
 
 class ItemCard extends StatelessWidget {
   final Item item;

@@ -214,50 +214,41 @@
 //     await getItems();
 //   }
 // }
-import 'package:hive/hive.dart';
-import '../models/item.dart';
-import '../services/item_api_service.dart';
+// import 'package:hive/hive.dart';
+// import '../models/item.dart';
+// import '../services/item_api_service.dart';
 
-class ItemRepository {
-  final Box<Item> box;
-  final ItemApiService api;
+// class ItemRepository {
+//   final Box<Item> box;
+//   ItemRepository(this.box);
 
-  ItemRepository(this.box, this.api);
+//   // 🔥 MAIN LOGIC
+//   Future<List<Item>> getItems() async {
+//     try {
+//       // 1. Fetch from API
+//       final items = await getItems();
+//       // 2. Save to Hive
+//       await box.clear();
+//       for (var item in items) {
+//         await box.put(item.id, item);
+//       }
 
-  // 🔥 MAIN LOGIC
-  Future<List<Item>> getItems() async {
-    try {
-      // 1. Fetch from API
-      final items = await api.fetchItems();
+//       return items;
+//     } catch (e) {
+//       print("API FAILED → fallback to Hive");
+//       return box.values.toList();
+//     }
+//   }
 
-      // 2. Save to Hive
-      await box.clear();
-      for (var item in items) {
-        await box.put(item.id, item);
-      }
+//   Future<void> addItem(Item item) async {
+//     await getItems();
+//   }
 
-      return items;
-    } catch (e) {
-      print("API FAILED → fallback to Hive");
-      return box.values.toList();
-    }
-  }
+//   Future<void> updateItem(Item item) async {
+//     await getItems();
+//   }
 
-  Future<void> addItem(Item item) async {
-    // 1. Send to API FIRST
-    await api.addItem(item);
-
-    // 2. Fetch updated list
-    await getItems();
-  }
-
-  Future<void> updateItem(Item item) async {
-    await api.updateItem(item);
-    await getItems();
-  }
-
-  Future<void> deleteItem(String id) async {
-    await api.deleteItem(id);
-    await getItems();
-  }
-}
+//   Future<void> deleteItem(String id) async {
+//     await getItems();
+//   }
+// }

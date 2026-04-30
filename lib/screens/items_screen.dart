@@ -100,7 +100,7 @@ class ItemsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final itemsAsync = ref.watch(itemsProvider);
+    final itemsAsync = ref.watch(itemProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text("Items")),
@@ -140,7 +140,7 @@ class ItemsScreen extends ConsumerWidget {
                   icon: const Icon(Icons.delete),
                   onPressed: () {
                     ref
-                        .read(itemsProvider.notifier)
+                        .read(itemProvider.notifier)
                         .deleteItem(item.id);
                   },
                 ),

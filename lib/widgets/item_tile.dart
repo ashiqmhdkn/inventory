@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_inventory/models/item.dart';
+import 'package:flutter_inventory/models/apiitem.dart';
 
 class ItemTile extends StatelessWidget {
   final Item item;
@@ -15,7 +15,7 @@ class ItemTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final mrp = item.mrpPrice ?? 0;
+    final mrp = item.price;
 
     return GestureDetector(
       onTap: onTap,

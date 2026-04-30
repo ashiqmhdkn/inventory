@@ -1,27 +1,25 @@
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter_inventory/models/apiitem.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import '../models/item.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ItemFormBottomSheet extends StatefulWidget {
+class ItemFormBottomSheet extends ConsumerStatefulWidget{
   final Item? item;
 
-  const ItemFormBottomSheet({
-    super.key,
+ ItemFormBottomSheet({super.key,
     this.item,
   });
 
   @override
-  State<ItemFormBottomSheet> createState() => _ItemFormBottomSheetState();
+  ConsumerState<ItemFormBottomSheet> createState() => _ItemFormBottomSheetState();
 }
 
-class _ItemFormBottomSheetState extends State<ItemFormBottomSheet> {
+class _ItemFormBottomSheetState extends ConsumerState<ItemFormBottomSheet> {
   final _formKey = GlobalKey<FormState>();
 
   late final TextEditingController _titleCtrl;
   late final TextEditingController _priceCtrl;
-  late final TextEditingController _mrpCtrl;
   late final TextEditingController _stockCtrl;
 
   String itemImage = "";
@@ -42,9 +40,6 @@ class _ItemFormBottomSheetState extends State<ItemFormBottomSheet> {
       text: item != null ? item.price.toStringAsFixed(0) : '',
     );
 
-    _mrpCtrl = TextEditingController(
-      text: item?.mrpPrice != null ? item!.mrpPrice!.toStringAsFixed(0) : '',
-    );
 
     _stockCtrl = TextEditingController(
       text: item?.stock?.toString() ?? '',
@@ -57,7 +52,6 @@ class _ItemFormBottomSheetState extends State<ItemFormBottomSheet> {
   void dispose() {
     _titleCtrl.dispose();
     _priceCtrl.dispose();
-    _mrpCtrl.dispose();
     _stockCtrl.dispose();
     super.dispose();
   }
@@ -79,18 +73,13 @@ class _ItemFormBottomSheetState extends State<ItemFormBottomSheet> {
       return;
     }
 
-    final mrpText = _mrpCtrl.text.trim();
     Navigator.pop(
       context,
       Item(
         id: "",
-        isMarket: true,
         price: double.parse(_priceCtrl.text.trim()),
         title: _titleCtrl.text.trim(),
         image: itemImage,
-        mrpPrice: _mrpCtrl.text.trim().isEmpty
-            ? null
-            : double.parse(_mrpCtrl.text.trim()),
         stock: _stockCtrl.text.trim().isEmpty
             ? null
             : int.parse(_stockCtrl.text.trim()),
@@ -155,39 +144,17 @@ class _ItemFormBottomSheetState extends State<ItemFormBottomSheet> {
                       v == null || v.trim().isEmpty ? "Required" : null,
                 ),
                 const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: _priceCtrl,
-                        decoration: const InputDecoration(
-                          labelText: "Price",
-                          border: OutlineInputBorder(),
-                        ),
-                        keyboardType: TextInputType.number,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                        ],
-                        validator: (v) =>
-                            v == null || v.isEmpty ? "Required" : null,
-                      ),
+                Expanded(
+                  child: TextFormField(
+                    controller: _priceCtrl,
+                    decoration: const InputDecoration(
+                      labelText: "Price",
+                      border: OutlineInputBorder(),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: TextFormField(
-                        controller: _mrpCtrl,
-                        decoration: const InputDecoration(
-                          labelText: "Market Price (Optional)",
-                          border: OutlineInputBorder(),
-                        ),
-                        keyboardType: TextInputType.number,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                        ],
-                        // No validator — MRP is nullable
-                      ),
-                    ),
-                  ],
+                    keyboardType: TextInputType.number,
+                    validator: (v) =>
+                        v == null || v.isEmpty ? "Required" : null,
+                  ),
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
@@ -197,9 +164,6 @@ class _ItemFormBottomSheetState extends State<ItemFormBottomSheet> {
                     border: OutlineInputBorder(),
                   ),
                   keyboardType: TextInputType.number,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly,
-                  ],
                 ),
                 const SizedBox(height: 16),
                 GestureDetector(
