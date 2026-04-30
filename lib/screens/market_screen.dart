@@ -489,8 +489,11 @@
 //   }
 // }
 import 'package:flutter/material.dart';
+import 'package:flutter_inventory/providers/auth_provider.dart';
+import 'package:flutter_inventory/utils/item_ui_helper.dart';
+import 'package:flutter_inventory/widgets/item_card.dart';
+import 'package:flutter_inventory/widgets/item_tile.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'dart:io';
 
 import '../models/item.dart';
 import '../providers/item_provider.dart';
@@ -505,13 +508,79 @@ class MarketScreen extends ConsumerStatefulWidget {
 
 class _MarketScreenState extends ConsumerState<MarketScreen> {
   final TextEditingController _searchController = TextEditingController();
-  String _query = '';
+  final String _query = '';
   String _sortBy = 'name';
 
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+// ---------------- ADD ----------------
+  Future<void> _openAdd() async {
+    final result = await openItemFormBottomSheet(context);
+
+    if (result != null && mounted) {
+      await ref.read(itemsProvider.notifier).addItem(
+            title: result.title,
+            tempImagePath: result.image,
+            price: result.price,
+            stock: result.stock,
+            isMarket: result.isMarket,
+          );
+    }
+  }
+
+  // ---------------- EDIT ----------------
+  Future<void> _openEdit(Item item) async {
+    final result = await openItemFormBottomSheet(context, item: item);
+
+    if (result != null && mounted) {
+      await ref.read(itemsProvider.notifier).updateItem(
+            id: item.id,
+            title: result.title,
+            imagePath: result.image,
+            price: result.price,
+            stock: result.stock,
+            isMarket: result.isMarket,
+          );
+    }
+  }
+
+  // ---------------- DELETE ----------------
+  Future<void> _confirmDelete(Item item) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: const Color(0xFF1e1e21),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          'Remove item?',
+          style: TextStyle(color: Colors.white, fontSize: 16),
+        ),
+        content: Text(
+          'Delete "${item.title}" from inventory?',
+          style: const TextStyle(color: Color(0xFF888888)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel',
+                style: TextStyle(color: Color(0xFF555555))),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete',
+                style: TextStyle(color: Color(0xFFf87171))),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await ref.read(itemsProvider.notifier).deleteItem(item.id);
+    }
   }
 
   List<Item> _applySort(List<Item> items) {
@@ -581,6 +650,7 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
   @override
   Widget build(BuildContext context) {
     final itemsAsync = ref.watch(itemsProvider);
+    final isAdmin = ref.watch(authProvider).isAdmin;
 
     return Scaffold(
       backgroundColor: const Color(0xFF0e0e10),
@@ -622,21 +692,43 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
             itemBuilder: (context, index) {
               final item = sorted[index];
 
-              return _MarketItemTile(
-                item: item,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => ItemDetailScreen(item: item),
-                    ),
-                  );
-                },
-              );
+              return isAdmin
+                  ? ItemCard(
+                      item: item,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ItemDetailScreen(item: item),
+                          ),
+                        );
+                      },
+                      onEdit: () => _openEdit(item),
+                      onDelete: () => _confirmDelete(item),
+                    )
+                  : ItemTile(
+                      item: item,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ItemDetailScreen(item: item),
+                          ),
+                        );
+                      },
+                    );
             },
           );
         },
       ),
+      floatingActionButton: isAdmin
+          ? FloatingActionButton.extended(
+              onPressed: _openAdd,
+              backgroundColor: const Color(0xFF1D9E75),
+              icon: const Icon(Icons.add),
+              label: const Text("Add item"),
+            )
+          : null,
     );
   }
 }
@@ -697,117 +789,6 @@ class _SortOption extends StatelessWidget {
             ]
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _MarketItemTile extends StatelessWidget {
-  final Item item;
-  final VoidCallback onTap;
-
-  const _MarketItemTile({
-    required this.item,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final mrp = item.mrpPrice ?? 0;
-
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: const Color(0xFF161618),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: const Color(0xFF222224)),
-        ),
-        child: Row(
-          children: [
-            // Image
-            ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: (item.image != null && item.image!.isNotEmpty)
-                  ? Image.file(
-                      File(item.image!),
-                      width: 52,
-                      height: 52,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _PlaceholderBox(),
-                    )
-                  : _PlaceholderBox(),
-            ),
-
-            const SizedBox(width: 14),
-
-            // Info
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    item.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Color(0xFFf0f0f0),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Stock: ${item.stock ?? 0}',
-                    style:
-                        const TextStyle(color: Color(0xFF555555), fontSize: 11),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    (item.stock ?? 0) > 0 ? 'In stock' : 'Out of stock',
-                    style: TextStyle(
-                      color: (item.stock ?? 0) > 0
-                          ? const Color(0xFF444444)
-                          : const Color(0xFFf87171),
-                      fontSize: 10,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Price
-            Text(
-              '₹${mrp.toStringAsFixed(0)}',
-              style: const TextStyle(
-                color: Color(0xFFf0f0f0),
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _PlaceholderBox extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 52,
-      height: 52,
-      decoration: BoxDecoration(
-        color: const Color(0xFF1a1a1c),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: const Icon(
-        Icons.image_outlined,
-        size: 22,
-        color: Color(0xFF333333),
       ),
     );
   }

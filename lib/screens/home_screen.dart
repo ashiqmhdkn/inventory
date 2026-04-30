@@ -618,7 +618,11 @@
 //   }
 // }
 import 'package:flutter/material.dart';
+import 'package:flutter_inventory/providers/auth_provider.dart';
 import 'package:flutter_inventory/repositories/item_repository.dart';
+import 'package:flutter_inventory/screens/login_screen.dart';
+import 'package:flutter_inventory/utils/item_ui_helper.dart';
+import 'package:flutter_inventory/widgets/item_tile.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/item.dart';
@@ -636,6 +640,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
+
   String _query = '';
 
   @override
@@ -645,15 +650,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   // ---------------- ADD ----------------
+  // Future<void> _openAdd() async {
+  //   final result = await showModalBottomSheet<Item>(
+  //     context: context,
+  //     isScrollControlled: true,
+  //     shape: const RoundedRectangleBorder(
+  //       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+  //     ),
+  //     builder: (_) => const ItemFormBottomSheet(),
+  //   );
+
+  //   if (result != null && mounted) {
+  //     await ref.read(itemsProvider.notifier).addItem(
+  //           title: result.title,
+  //           tempImagePath: result.image,
+  //           price: result.price,
+  //           stock: result.stock,
+  //           isMarket: result.isMarket,
+  //         );
+  //   }
+  // }
   Future<void> _openAdd() async {
-    final result = await showModalBottomSheet<Item>(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (_) => const ItemFormBottomSheet(),
-    );
+    final result = await openItemFormBottomSheet(context);
 
     if (result != null && mounted) {
       await ref.read(itemsProvider.notifier).addItem(
@@ -668,11 +686,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   // ---------------- EDIT ----------------
   Future<void> _openEdit(Item item) async {
-    final result = await showModalBottomSheet<Item>(
-      context: context,
-      isScrollControlled: true,
-      builder: (_) => ItemFormBottomSheet(item: item),
-    );
+    final result = await openItemFormBottomSheet(context, item: item);
 
     if (result != null && mounted) {
       await ref.read(itemsProvider.notifier).updateItem(
@@ -685,6 +699,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           );
     }
   }
+
+  // Future<void> _openEdit(Item item) async {
+  //   final result = await showModalBottomSheet<Item>(
+  //     context: context,
+  //     isScrollControlled: true,
+  //     builder: (_) => ItemFormBottomSheet(item: item),
+  //   );
+
+  //   if (result != null && mounted) {
+  //     await ref.read(itemsProvider.notifier).updateItem(
+  //           id: item.id,
+  //           title: result.title,
+  //           imagePath: result.image,
+  //           price: result.price,
+  //           stock: result.stock,
+  //           isMarket: result.isMarket,
+  //         );
+  //   }
+  // }
 
   // ---------------- DELETE ----------------
   Future<void> _confirmDelete(Item item) async {
@@ -724,6 +757,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final itemsAsync = ref.watch(itemsProvider);
+    final isAdmin = ref.watch(authProvider).isAdmin;
 
     return Scaffold(
       backgroundColor: const Color(0xFF0e0e10),
@@ -731,6 +765,41 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         backgroundColor: const Color(0xFF0e0e10),
         elevation: 0,
         title: const Text("Store"),
+        actions: [
+          Consumer(
+            builder: (context, ref, _) {
+              final isAdmin = ref.watch(authProvider).isAdmin;
+
+              return IconButton(
+                icon: Icon(isAdmin ? Icons.logout : Icons.login),
+                onPressed: () {
+                  if (isAdmin) {
+                    ref.read(authProvider.notifier).logout();
+                  } else {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const LoginScreen(),
+                      ),
+                    );
+                  }
+                },
+              );
+            },
+          )
+
+          //       IconButton(onPressed: (){}, icon: Icon(Icons.login)),
+          //     IconButton(
+          // onPressed: () {
+          //   // clear session
+          //   Navigator.pushReplacement(
+          //     context,
+          //     MaterialPageRoute(builder: (_) => LoginScreen()),
+          //   );
+          // },
+          // icon: Icon(Icons.logout),
+          //)
+        ],
       ),
       body: Column(
         children: [
@@ -790,19 +859,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   itemBuilder: (context, index) {
                     final item = items[index];
 
-                    return ItemTile(
-                      item: item,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => ItemDetailScreen(item: item),
-                          ),
-                        );
-                      },
-                      onEdit: () => _openEdit(item),
-                      onDelete: () => _confirmDelete(item),
-                    );
+                    return isAdmin
+                        ? ItemCard(
+                            item: item,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => ItemDetailScreen(item: item),
+                                ),
+                              );
+                            },
+                            onEdit: () => _openEdit(item),
+                            onDelete: () => _confirmDelete(item),
+                          )
+                        : ItemTile(
+                            item: item,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => ItemDetailScreen(item: item),
+                                ),
+                              );
+                            },
+                          );
                   },
                 );
               },
@@ -810,12 +891,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _openAdd,
-        backgroundColor: const Color(0xFF1D9E75),
-        icon: const Icon(Icons.add),
-        label: const Text("Add item"),
-      ),
+      floatingActionButton: isAdmin
+          ? FloatingActionButton.extended(
+              onPressed: _openAdd,
+              backgroundColor: const Color(0xFF1D9E75),
+              icon: const Icon(Icons.add),
+              label: const Text("Add item"),
+            )
+          : null,
+      // floatingActionButton: FloatingActionButton.extended(
+      //   onPressed: _openAdd,
+      //   backgroundColor: const Color(0xFF1D9E75),
+      //   icon: const Icon(Icons.add),
+      //   label: const Text("Add item"),
+      // ),
     );
   }
 }

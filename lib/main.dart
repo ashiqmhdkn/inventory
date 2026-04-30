@@ -34,6 +34,8 @@
 //   }
 // }
 import 'package:flutter/material.dart';
+import 'package:flutter_inventory/models/admin.dart';
+import 'package:flutter_inventory/providers/auth_provider.dart';
 import 'package:flutter_inventory/providers/item_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -46,12 +48,15 @@ void main() async {
 
   await Hive.initFlutter();
   Hive.registerAdapter(ItemAdapter());
+  Hive.registerAdapter(AdminAdapter());
   final box = await Hive.openBox<Item>('items');
+  final adminBox = await Hive.openBox<Admin>('adminBox');
 
   runApp(
     ProviderScope(
       overrides: [
-        hiveBoxProvider.overrideWithValue(box), // ✅ inject
+        hiveBoxProvider.overrideWithValue(box),
+        adminBoxProvider.overrideWithValue(adminBox), // ✅ inject
       ],
       child: const MyApp(),
     ),

@@ -2,13 +2,13 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_inventory/models/item.dart';
 
-class ItemTile extends StatelessWidget {
+class ItemCard extends StatelessWidget {
   final Item item;
   final VoidCallback onTap;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
-  const ItemTile({
+  const ItemCard({
     super.key,
     required this.item,
     required this.onTap,
@@ -19,9 +19,7 @@ class ItemTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool isOutOfStock = (item.stock ?? 0) <= 0;
-    final bool isLowStock =
-    (item.stock ?? 0) > 0 &&
-    (item.stock ?? 0) <= 5;
+    final bool isLowStock = (item.stock ?? 0) > 0 && (item.stock ?? 0) <= 5;
 
     String stockLabel = isOutOfStock
         ? 'Out of stock'
@@ -39,14 +37,15 @@ class ItemTile extends StatelessWidget {
       onTap: onTap,
       leading: CircleAvatar(
         child: item.image != null
-    ?   Image.file(
-          File(item.image!),
-          width: 60,
-          height: 60,
-          fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) =>
-              const Icon(Icons.broken_image, color: Colors.grey),
-        ) : const Icon(Icons.image_not_supported),
+            ? Image.file(
+                File(item.image!),
+                width: 60,
+                height: 60,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) =>
+                    const Icon(Icons.broken_image, color: Colors.grey),
+              )
+            : const Icon(Icons.image_not_supported),
       ),
       title: Text(
         item.title,
@@ -56,21 +55,18 @@ class ItemTile extends StatelessWidget {
           color: Color(0xFFe8e8e8),
         ),
       ),
-      subtitle: 
-    
-          Text(
-            'QTY: ${item.stock} \t•\t $stockLabel',
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: stockColor,
-            ),
-          ),
-        
+      subtitle: Text(
+        'QTY: ${item.stock} \t•\t $stockLabel',
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+          color: stockColor,
+        ),
+      ),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-            Text(
+          Text(
             'price:${item.price.toStringAsFixed(0)}',
             style: TextStyle(
               fontSize: 13,
@@ -78,7 +74,6 @@ class ItemTile extends StatelessWidget {
               color: isOutOfStock ? Colors.grey : Colors.white,
             ),
           ),
-    
           IconButton(
             icon: const Icon(Icons.edit_rounded, color: Colors.white),
             onPressed: onEdit,
@@ -98,7 +93,8 @@ class ItemTile extends StatelessWidget {
       builder: (_) => AlertDialog(
         backgroundColor: const Color(0xFF1e1e21),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Remove item?', style: TextStyle(color: Colors.white)),
+        title:
+            const Text('Remove item?', style: TextStyle(color: Colors.white)),
         content: Text(
           'Are you sure you want to delete ${item.title}?',
           style: const TextStyle(color: Color(0xFF888888)),
