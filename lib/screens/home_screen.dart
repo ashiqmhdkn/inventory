@@ -19,8 +19,8 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
-
   String _query = '';
+  String _sortBy = 'name'; // 'name' | 'price_asc' | 'price_desc'
 
   @override
   void dispose() {
@@ -35,78 +35,112 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ref.read(itemProvider.notifier).build();
     });
   }
-  // ---------------- ADD ----------------
-  // Future<void> _openAdd() async {
-  //   final result = await showModalBottomSheet<Item>(
-  //     context: context,
-  //     isScrollControlled: true,
-  //     shape: const RoundedRectangleBorder(
-  //       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-  //     ),
-  //     builder: (_) => const ItemFormBottomSheet(),
-  //   );
 
-  //   if (result != null && mounted) {
-  //     await ref.read(itemsProvider.notifier).addItem(
-  //           title: result.title,
-  //           tempImagePath: result.image,
-  //           price: result.price,
-  //           stock: result.stock,
-  //           isMarket: result.isMarket,
-  //         );
-  //   }
-  // }
-  Future<void> _openAdd() async {
-    final result =
-        //  await showModalBottomSheet<Item>(
-        //   context: context,
-        //   isScrollControlled: true,
-        //   shape: const RoundedRectangleBorder(
-        //     borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        //   ),
-        //   builder: (_) => ItemFormBottomSheet(),
-        // );
-        await openItemFormBottomSheet(context);
-  String generateReferralCode() {
-    final Uuid _uuid = Uuid();
-    // Generate a UUID v4
-    String uuid = _uuid.v4();
-    // Optionally shorten and format the UUID for readability
-    return uuid; // e.g., A1B2C3D4
+  // ─── Sort ────────────────────────────────────────────────────────────────
+
+  List<Item> _applySort(List<Item> items) {
+    final sorted = [...items];
+    switch (_sortBy) {
+      case 'price_asc':
+        sorted.sort((a, b) => (a.price ?? 0).compareTo(b.price ?? 0));
+      case 'price_desc':
+        sorted.sort((a, b) => (b.price ?? 0).compareTo(a.price ?? 0));
+      default:
+        sorted.sort((a, b) => a.title.compareTo(b.title));
+    }
+    return sorted;
   }
 
-    if (result != null && mounted) {
-      print(result.title);
-      print(result.image);
-      print(result.price);
-      print(result.stock);
-      final newId = generateReferralCode();
-      print("Generated ID: $newId");
+  void _showSortSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF161618),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => Padding(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 36),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2a2a2e),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'Sort by',
+              style: TextStyle(
+                color: Color(0xFFf0f0f0),
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                fontFamily: 'Syne',
+              ),
+            ),
+            const SizedBox(height: 12),
+            _SortOption(
+              label: 'Name',
+              icon: Icons.sort_by_alpha_rounded,
+              selected: _sortBy == 'name',
+              onTap: () {
+                setState(() => _sortBy = 'name');
+                Navigator.pop(context);
+              },
+            ),
+            _SortOption(
+              label: 'Price: Low to High',
+              icon: Icons.arrow_upward_rounded,
+              selected: _sortBy == 'price_asc',
+              onTap: () {
+                setState(() => _sortBy = 'price_asc');
+                Navigator.pop(context);
+              },
+            ),
+            _SortOption(
+              label: 'Price: High to Low',
+              icon: Icons.arrow_downward_rounded,
+              selected: _sortBy == 'price_desc',
+              onTap: () {
+                setState(() => _sortBy = 'price_desc');
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
+  // ─── Add ─────────────────────────────────────────────────────────────────
+
+  Future<void> _openAdd() async {
+    final result = await openItemFormBottomSheet(context);
+
+    String generateId() => const Uuid().v4();
+
+    if (result != null && mounted) {
+      final newId = generateId();
       await ref.read(itemProvider.notifier).createItem(
-            
+            id: newId,
             name: result.title,
             image: result.image,
-
             price: result.price,
-            id: newId,
             quantity: result.stock,
           );
     }
   }
 
-  // ---------------- EDIT ----------------
-  // Future<void> _openEdit(Item item) async {
-  //   final result = await showModalBottomSheet<Item>(
-  //     context: context,
-  //     isScrollControlled: true,
-  //     builder: (_) => ItemFormBottomSheet(item: item),
-  //   );
-    
-  // }
+  // ─── Edit ─────────────────────────────────────────────────────────────────
 
   Future<void> _openEdit(Item item) async {
-    final result = await openItemFormBottomSheet(context,item:item);
+    final result = await openItemFormBottomSheet(context, item: item);
 
     if (result != null && mounted) {
       await ref.read(itemProvider.notifier).EditItem(
@@ -114,13 +148,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             name: result.title,
             image: result.image,
             price: result.price,
-            quantity: result.stock
+            quantity: result.stock,
           );
     }
   }
 
-  // ---------------- DELETE ----------------
-  Future<void> confirmDelete(Item item) async {
+  // ─── Delete ───────────────────────────────────────────────────────────────
+
+  Future<void> _confirmDelete(Item item) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
@@ -141,8 +176,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 style: TextStyle(color: Color(0xFF555555))),
           ),
           TextButton(
-            onPressed: () async{await ref.read(itemProvider.notifier).removeItem(item.id); 
-                            Navigator.pop(context, true);},
+            onPressed: () async {
+              await ref.read(itemProvider.notifier).removeItem(item.id);
+              Navigator.pop(context, true);
+            },
             child: const Text('Delete',
                 style: TextStyle(color: Color(0xFFf87171))),
           ),
@@ -151,9 +188,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
 
     if (confirmed == true) {
-      await ref.read(itemProvider.notifier).removeItem(item.id);
+      // already deleted inside dialog, no-op needed
     }
   }
+
+  // ─── Build ────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -164,133 +203,268 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       backgroundColor: const Color(0xFF0e0e10),
       appBar: AppBar(
         backgroundColor: const Color(0xFF0e0e10),
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
-        title: const Text("Store"),
+        titleSpacing: 16,
+        title: Row(
+          children: [
+            Container(
+              width: 8,
+              height: 8,
+              decoration: const BoxDecoration(
+                color: Color(0xFF1D9E75),
+                shape: BoxShape.circle,
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Text(
+              'Store',
+              style: TextStyle(
+                fontFamily: 'Syne',
+                fontWeight: FontWeight.w800,
+                fontSize: 20,
+                color: Color(0xFFf0f0f0),
+                letterSpacing: -0.3,
+              ),
+            ),
+          ],
+        ),
         actions: [
-          Consumer(
-            builder: (context, ref, _) {
-              final isAdmin = ref.watch(authProvider).isAdmin;
-
-              return IconButton(
-                icon: Icon(isAdmin ? Icons.logout : Icons.login),
-                onPressed: () {
-                  if (isAdmin) {
-                    ref.read(authProvider.notifier).logout();
-                  } else {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const LoginScreen(),
-                      ),
-                    );
-                  }
-                },
-              );
-            },
-          )
-
-          //       IconButton(onPressed: (){}, icon: Icon(Icons.login)),
-          //     IconButton(
-          // onPressed: () {
-          //   // clear session
-          //   Navigator.pushReplacement(
-          //     context,
-          //     MaterialPageRoute(builder: (_) => LoginScreen()),
-          //   );
-          // },
-          // icon: Icon(Icons.logout),
-          //)
-        ],
-      ),
-      body: Column(
-        children: [
-          // 🔍 SEARCH BAR
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: TextField(
-              controller: _searchController,
-              onChanged: (v) => setState(() => _query = v),
-              decoration: InputDecoration(
-                hintText: "Search items...",
-                prefixIcon: const Icon(Icons.search),
-                filled: true,
-                fillColor: const Color(0xFF161618),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
+          // Sort button
+          GestureDetector(
+            onTap: _showSortSheet,
+            child: Container(
+              height: 34,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1a1a1c),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFF2a2a2e)),
+              ),
+              alignment: Alignment.center,
+              child: Row(
+                children: [
+                  const Icon(Icons.sort_rounded,
+                      size: 15, color: Color(0xFF888888)),
+                  const SizedBox(width: 5),
+                  Text(
+                    _sortBy == 'name'
+                        ? 'Name'
+                        : _sortBy == 'price_asc'
+                            ? 'Price ↑'
+                            : 'Price ↓',
+                    style: const TextStyle(
+                        fontSize: 12, color: Color(0xFF888888)),
+                  ),
+                ],
               ),
             ),
           ),
+          const SizedBox(width: 8),
+          // Login / Logout button
+          Consumer(
+            builder: (context, ref, _) {
+              final isAdmin = ref.watch(authProvider).isAdmin;
+              return Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: GestureDetector(
+                  onTap: () {
+                    if (isAdmin) {
+                      ref.read(authProvider.notifier).logout();
+                    } else {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const LoginScreen()),
+                      );
+                    }
+                  },
+                  child: Container(
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1a1a1c),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: const Color(0xFF2a2a2e)),
+                    ),
+                    alignment: Alignment.center,
+                    child: Icon(
+                      isAdmin ? Icons.logout_rounded : Icons.login_rounded,
+                      size: 16,
+                      color: isAdmin
+                          ? const Color(0xFFf87171)
+                          : const Color(0xFF888888),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+      body: itemsAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Center(child: Text("Error: $e")),
+        data: (allItems) {
+          final filtered = _query.isEmpty
+              ? allItems
+              : allItems
+                  .where((it) =>
+                      it.title.toLowerCase().contains(_query.toLowerCase()))
+                  .toList();
 
-          // 📦 LIST
-          Expanded(
-            child: itemsAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(child: Text("Error: $e")),
-              data: (allItems) {
-                final items = _query.isEmpty
-                    ? allItems
-                    : allItems
-                        .where((it) => it.title
-                            .toLowerCase()
-                            .contains(_query.toLowerCase()))
-                        .toList();
+          final sorted = _applySort(filtered);
 
-                if (items.isEmpty) {
-                  return Center(
+          return CustomScrollView(
+            slivers: [
+              // ── Search bar ──────────────────────────────────────────────
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(14, 4, 14, 14),
+                  child: Container(
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF161618),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFF2a2a2e)),
+                    ),
+                    child: Row(
+                      children: [
+                        const SizedBox(width: 12),
+                        const Icon(Icons.search_rounded,
+                            size: 18, color: Color(0xFF444444)),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: TextField(
+                            controller: _searchController,
+                            style: const TextStyle(
+                                fontSize: 14, color: Color(0xFFcccccc)),
+                            onChanged: (v) => setState(() => _query = v),
+                            decoration: const InputDecoration(
+                              hintText: 'Search items…',
+                              hintStyle: TextStyle(
+                                  color: Color(0xFF444444), fontSize: 14),
+                              border: InputBorder.none,
+                              isDense: true,
+                            ),
+                          ),
+                        ),
+                        if (_query.isNotEmpty)
+                          GestureDetector(
+                            onTap: () {
+                              _searchController.clear();
+                              setState(() => _query = '');
+                            },
+                            child: const Padding(
+                              padding: EdgeInsets.only(right: 10),
+                              child: Icon(Icons.close_rounded,
+                                  size: 16, color: Color(0xFF555555)),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              // ── Stats bar ───────────────────────────────────────────────
+              if (sorted.isNotEmpty)
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                  sliver: SliverToBoxAdapter(
+                    child: Text(
+                      _query.isEmpty
+                          ? 'Items  ·  ${sorted.length}'
+                          : 'Results  ·  ${sorted.length}',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFF444444),
+                        letterSpacing: 0.06,
+                      ),
+                    ),
+                  ),
+                ),
+
+              // ── Empty state ─────────────────────────────────────────────
+              if (sorted.isEmpty)
+                SliverFillRemaining(
+                  child: Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.inventory_2_outlined,
-                            size: 40, color: Colors.grey),
-                        const SizedBox(height: 12),
+                        Container(
+                          width: 64,
+                          height: 64,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF161618),
+                            shape: BoxShape.circle,
+                            border:
+                                Border.all(color: const Color(0xFF2a2a2e)),
+                          ),
+                          child: const Icon(Icons.inventory_2_outlined,
+                              size: 28, color: Color(0xFF444444)),
+                        ),
+                        const SizedBox(height: 16),
                         Text(
                           _query.isEmpty ? 'No items yet' : 'No results',
-                          style: const TextStyle(color: Colors.grey),
+                          style: const TextStyle(
+                            color: Color(0xFF888888),
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          _query.isEmpty
+                              ? 'Add your first item using the + button'
+                              : 'Try a different search term',
+                          style: const TextStyle(
+                              color: Color(0xFF444444), fontSize: 13),
+                          textAlign: TextAlign.center,
                         ),
                       ],
                     ),
-                  );
-                }
-
-                return ListView.builder(
-                  padding: const EdgeInsets.only(bottom: 80),
-                  itemCount: items.length,
-                  itemBuilder: (context, index) {
-                    final item = items[index];
-
-                    return isAdmin
-                        ? ItemCard(
-                            item: item,
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => ItemDetailScreen(item: item),
+                  ),
+                )
+              else
+                // ── Item list ──────────────────────────────────────────────
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 100),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final item = sorted[index];
+                        return isAdmin
+                            ? ItemCard(
+                                item: item,
+                                onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        ItemDetailScreen(item: item),
+                                  ),
+                                ),
+                                onEdit: () => _openEdit(item),
+                                onDelete: () => _confirmDelete(item),
+                              )
+                            : ItemTile(
+                                item: item,
+                                onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        ItemDetailScreen(item: item),
+                                  ),
                                 ),
                               );
-                            },
-                            onEdit: () => _openEdit(item),
-                            onDelete: () => confirmDelete(item),
-                          )
-                        : ItemTile(
-                            item: item,
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => ItemDetailScreen(item: item),
-                                ),
-                              );
-                            },
-                          );
-                  },
-                );
-              },
-            ),
-          ),
-        ],
+                      },
+                      childCount: sorted.length,
+                    ),
+                  ),
+                ),
+            ],
+          );
+        },
       ),
       floatingActionButton: isAdmin
           ? FloatingActionButton.extended(
@@ -300,12 +474,68 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               label: const Text("Add item"),
             )
           : null,
-      // floatingActionButton: FloatingActionButton.extended(
-      //   onPressed: _openAdd,
-      //   backgroundColor: const Color(0xFF1D9E75),
-      //   icon: const Icon(Icons.add),
-      //   label: const Text("Add item"),
-      // ),
+    );
+  }
+}
+
+// ─── Sort Option ─────────────────────────────────────────────────────────────
+
+class _SortOption extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _SortOption({
+    required this.label,
+    required this.icon,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: selected
+              ? const Color(0xFF1D9E75).withOpacity(0.08)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: selected
+                ? const Color(0xFF1D9E75).withOpacity(0.3)
+                : const Color(0xFF2a2a2e),
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(icon,
+                size: 16,
+                color: selected
+                    ? const Color(0xFF1D9E75)
+                    : const Color(0xFF666666)),
+            const SizedBox(width: 10),
+            Text(
+              label,
+              style: TextStyle(
+                color: selected
+                    ? const Color(0xFFf0f0f0)
+                    : const Color(0xFF888888),
+                fontSize: 14,
+              ),
+            ),
+            if (selected) ...[
+              const Spacer(),
+              const Icon(Icons.check_rounded,
+                  size: 15, color: Color(0xFF1D9E75)),
+            ],
+          ],
+        ),
+      ),
     );
   }
 }

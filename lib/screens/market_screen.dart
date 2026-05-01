@@ -1,11 +1,12 @@
 import 'package:flutter_inventory/models/apiitem.dart';
 import 'package:flutter_inventory/providers/auth_provider.dart';
+import 'package:flutter_inventory/screens/login_screen.dart';
 import 'package:flutter_inventory/utils/item_ui_helper.dart';
 import 'package:flutter_inventory/widgets/item_card.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
-import '../providers/item_provider.dart';
+import '../providers/mrt_provider.dart';
 import 'item_detail_screen.dart';
 import 'dart:io';
 
@@ -24,7 +25,7 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
   void initState() {
     super.initState();
     Future.microtask(() {
-      ref.read(itemProvider.notifier).build();
+      ref.read(mrtProvider.notifier).build();
     });
   }
 
@@ -123,7 +124,7 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
       print(result.image);
       print(result.price);
       print(result.stock);
-      await ref.read(itemProvider.notifier).createItem(
+      await ref.read(mrtProvider.notifier).createItem(
             id: Uuid().v4(),
             name: result.title,
             image: result.image,
@@ -142,7 +143,7 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
       print(result.image);
       print(result.price);
       print(result.stock);
-      await ref.read(itemProvider.notifier).EditItem(
+      await ref.read(mrtProvider.notifier).EditItem(
             id: item.id,
             name: result.title,
             image: result.image,
@@ -183,14 +184,14 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
     );
 
     if (confirmed == true) {
-      await ref.read(itemProvider.notifier).removeItem(item.id);
+      await ref.read(mrtProvider.notifier).removeItem(item.id);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final isAdmin = ref.watch(authProvider).isAdmin;
-    final itemsAsync = ref.watch(itemProvider);
+    final mrtAsync = ref.watch(mrtProvider);
     return Scaffold(
       backgroundColor: const Color(0xFF0e0e10),
       appBar: AppBar(
@@ -222,216 +223,241 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
           ],
         ),
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: GestureDetector(
-              onTap: _showSortSheet,
-              child: Container(
-                height: 34,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1a1a1c),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: const Color(0xFF2a2a2e)),
-                ),
-                alignment: Alignment.center,
-                child: Row(
-                  children: [
-                    const Icon(Icons.sort_rounded,
-                        size: 15, color: Color(0xFF888888)),
-                    const SizedBox(width: 5),
-                    Text(
-                      _sortBy == 'name'
-                          ? 'Name'
-                          : _sortBy == 'price_asc'
-                              ? 'Price ↑'
-                              : 'Price ↓',
+  // Sort button
+  Padding(
+    padding: const EdgeInsets.only(left: 0),
+    child: GestureDetector(
+      onTap: _showSortSheet,
+      child: Container(
+        height: 34,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1a1a1c),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: const Color(0xFF2a2a2e)),
+        ),
+        alignment: Alignment.center,
+        child: Row(
+          children: [
+            const Icon(Icons.sort_rounded,
+                size: 15, color: Color(0xFF888888)),
+            const SizedBox(width: 5),
+            Text(
+              _sortBy == 'name'
+                  ? 'Name'
+                  : _sortBy == 'price_asc'
+                      ? 'Price ↑'
+                      : 'Price ↓',
+              style: const TextStyle(
+                  fontSize: 12, color: Color(0xFF888888)),
+            ),
+          ],
+        ),
+      ),
+    ),
+  ),
+  const SizedBox(width: 8),
+  // Login / Logout button
+  Consumer(
+    builder: (context, ref, _) {
+      final isAdmin = ref.watch(authProvider).isAdmin;
+      return Padding(
+        padding: const EdgeInsets.only(right: 12),
+        child: GestureDetector(
+          onTap: () {
+            if (isAdmin) {
+              ref.read(authProvider.notifier).logout();
+            } else {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+              );
+            }
+          },
+          child: Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              color: const Color(0xFF1a1a1c),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFF2a2a2e)),
+            ),
+            alignment: Alignment.center,
+            child: Icon(
+              isAdmin ? Icons.logout_rounded : Icons.login_rounded,
+              size: 16,
+              color: isAdmin
+                  ? const Color(0xFFf87171)
+                  : const Color(0xFF888888),
+            ),
+          ),
+        ),
+      );
+    },
+  ),
+],
+      ),
+      body: mrtAsync.when(
+  loading: () => const Center(child: CircularProgressIndicator()),
+  error: (err, _) => Center(child: Text("Error: $err")),
+  data: (items) {
+    final filtered = _query.isEmpty
+        ? items
+        : items
+            .where((it) =>
+                it.title.toLowerCase().contains(_query.toLowerCase()))
+            .toList();
+
+    final sorted = _applySort(filtered);
+
+    return CustomScrollView(
+      slivers: [
+        // ── Search bar ──────────────────────────────────────────────
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(14, 4, 14, 14),
+            child: Container(
+              height: 42,
+              decoration: BoxDecoration(
+                color: const Color(0xFF161618),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFF2a2a2e)),
+              ),
+              child: Row(
+                children: [
+                  const SizedBox(width: 12),
+                  const Icon(Icons.search_rounded,
+                      size: 18, color: Color(0xFF444444)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: TextField(
+                      controller: _searchController,
                       style: const TextStyle(
-                          fontSize: 12, color: Color(0xFF888888)),
+                          fontSize: 14, color: Color(0xFFcccccc)),
+                      onChanged: (v) => setState(() => _query = v),
+                      decoration: const InputDecoration(
+                        hintText: 'Search market items…',
+                        hintStyle: TextStyle(
+                            color: Color(0xFF444444), fontSize: 14),
+                        border: InputBorder.none,
+                        isDense: true,
+                      ),
                     ),
-                  ],
+                  ),
+                  if (_query.isNotEmpty)
+                    GestureDetector(
+                      onTap: () {
+                        _searchController.clear();
+                        setState(() => _query = '');
+                      },
+                      child: const Padding(
+                        padding: EdgeInsets.only(right: 10),
+                        child: Icon(Icons.close_rounded,
+                            size: 16, color: Color(0xFF555555)),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
+
+        // ── Stats bar ───────────────────────────────────────────────
+        if (sorted.isNotEmpty)
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+            sliver: SliverToBoxAdapter(
+              child: Text(
+                _query.isEmpty
+                    ? 'Listed  ·  ${sorted.length}'
+                    : 'Results  ·  ${sorted.length}',
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: Color(0xFF444444),
+                  letterSpacing: 0.06,
                 ),
               ),
             ),
           ),
-        ],
-      ),
-      body: itemsAsync.when(
-          loading: () => Center(child: CircularProgressIndicator()),
-          error: (err, _) => Center(child: Text("Error: $err")),
-          data: (items) {
-            if (items.isEmpty) {
-              return Center(child: Text("No items"));
-            }
 
-            return isAdmin
-                ? ListView.builder(
-                    padding: const EdgeInsets.only(bottom: 80),
-                    itemCount: items.length,
-                    itemBuilder: (context, index) {
-                      final item = items[index];
-
-                      return ItemCard(
-                        item: item,
-                        onTap: () {
-                          Navigator.push(
+        // ── Empty state ─────────────────────────────────────────────
+        if (sorted.isEmpty)
+          SliverFillRemaining(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF161618),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: const Color(0xFF2a2a2e)),
+                    ),
+                    child: const Icon(Icons.storefront_outlined,
+                        size: 28, color: Color(0xFF444444)),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    _query.isEmpty ? 'No market listings' : 'No results',
+                    style: const TextStyle(
+                      color: Color(0xFF888888),
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    _query.isEmpty
+                        ? 'Add items using the + button'
+                        : 'Try a different search term',
+                    style: const TextStyle(
+                        color: Color(0xFF444444), fontSize: 13),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          )
+        else
+          // ── Item list — admin gets ItemCard, user gets _MarketItemTile ──
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 100),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final item = sorted[index];
+                  return isAdmin
+                      ? ItemCard(
+                          item: item,
+                          onTap: () => Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (_) => ItemDetailScreen(item: item),
                             ),
-                          );
-                        },
-                        onEdit: () => _openEdit(item),
-                        onDelete: () => _confirmDelete(item),
-                      );
-                    },
-                  )
-                : ListView.builder(
-                    //  return Consumer<ItemProvider>(
-                    itemBuilder: (context, index) {
-                      final marketItems = items;
-                      final filtered = _query.isEmpty
-                          ? marketItems
-                          : marketItems
-                              .where((it) => it.title
-                                  .toLowerCase()
-                                  .contains(_query.toLowerCase()))
-                              .toList();
-                      final sorted = _applySort(filtered);
-                      return CustomScrollView(
-                        slivers: [
-                          // Search bar
-                          SliverToBoxAdapter(
-                            child: Padding(
-                              padding: const EdgeInsets.fromLTRB(14, 4, 14, 14),
-                              child: Container(
-                                height: 42,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF161618),
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                      color: const Color(0xFF2a2a2e)),
-                                ),
-                                child: Row(
-                                  children: [
-                                    const SizedBox(width: 12),
-                                    const Icon(Icons.search_rounded,
-                                        size: 18, color: Color(0xFF444444)),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: TextField(
-                                        controller: _searchController,
-                                        style: const TextStyle(
-                                            fontSize: 14,
-                                            color: Color(0xFFcccccc)),
-                                        onChanged: (v) =>
-                                            setState(() => _query = v),
-                                        decoration: const InputDecoration(
-                                          hintText: 'Search market items…',
-                                          hintStyle: TextStyle(
-                                              color: Color(0xFF444444),
-                                              fontSize: 14),
-                                          border: InputBorder.none,
-                                          isDense: true,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
+                          ),
+                          onEdit: () => _openEdit(item),
+                          onDelete: () => _confirmDelete(item),
+                        )
+                      : _MarketItemTile(
+                          item: item,
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ItemDetailScreen(item: item),
                             ),
                           ),
-                          // Stats bar
-                          if (sorted.isNotEmpty)
-                            SliverPadding(
-                              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                              sliver: SliverToBoxAdapter(
-                                child: Text(
-                                  _query.isEmpty
-                                      ? 'Listed  ·  ${sorted.length}'
-                                      : 'Results  ·  ${sorted.length}',
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    color: Color(0xFF444444),
-                                    letterSpacing: 0.06,
-                                  ),
-                                ),
-                              ),
-                            ),
-
-                          // Empty state
-                          if (sorted.isEmpty)
-                            SliverFillRemaining(
-                              child: Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Container(
-                                      width: 64,
-                                      height: 64,
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFF161618),
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                            color: const Color(0xFF2a2a2e)),
-                                      ),
-                                      child: const Icon(
-                                          Icons.storefront_outlined,
-                                          size: 28,
-                                          color: Color(0xFF444444)),
-                                    ),
-                                    const SizedBox(height: 16),
-                                    Text(
-                                      _query.isEmpty
-                                          ? 'No market listings'
-                                          : 'No results',
-                                      style: const TextStyle(
-                                        color: Color(0xFF888888),
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 6),
-                                    Text(
-                                      _query.isEmpty
-                                          ? 'Set an MRP price on any item to list it'
-                                          : 'Try a different search term',
-                                      style: const TextStyle(
-                                          color: Color(0xFF444444),
-                                          fontSize: 13),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            )
-                          else
-                            SliverPadding(
-                              padding:
-                                  const EdgeInsets.fromLTRB(12, 0, 12, 100),
-                              sliver: SliverList(
-                                delegate: SliverChildBuilderDelegate(
-                                  (context, index) {
-                                    final item = sorted[index];
-                                    return _MarketItemTile(
-                                      item: item,
-                                      onTap: () => Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (_) =>
-                                                ItemDetailScreen(item: item)),
-                                      ),
-                                    );
-                                  },
-                                  childCount: sorted.length,
-                                ),
-                              ),
-                            ),
-                        ],
-                      );
-                    },
-                  );
-          }),
+                        );
+                },
+                childCount: sorted.length,
+              ),
+            ),
+          ),
+      ],
+    );
+  },
+),
       floatingActionButton: isAdmin
           ? FloatingActionButton.extended(
               onPressed: _openAdd,
