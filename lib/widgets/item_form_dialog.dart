@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_inventory/models/apiitem.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -86,7 +87,6 @@ class _ItemFormBottomSheetState extends ConsumerState<ItemFormBottomSheet> {
             : int.parse(_stockCtrl.text.trim()),
       ),
     );
-
   }
 
   @override
@@ -94,13 +94,13 @@ class _ItemFormBottomSheetState extends ConsumerState<ItemFormBottomSheet> {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
     return SafeArea(
-      child:  Padding(
-  padding: EdgeInsets.only(
-    left: 10,
-    top: 10,
-    right: 10,
-    bottom: MediaQuery.of(context).viewInsets.bottom,
-  ),
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: 10,
+          top: 10,
+          right: 10,
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
         child: SingleChildScrollView(
           child: Form(
             key: _formKey,
@@ -116,14 +116,20 @@ class _ItemFormBottomSheetState extends ConsumerState<ItemFormBottomSheet> {
                 ),
                 const SizedBox(height: 20),
                 TextFormField(
-                  controller: _titleCtrl,
-                  decoration: const InputDecoration(
-                    labelText: "Item Name",
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: (v) =>
-                      v == null || v.trim().isEmpty ? "Required" : null,
-                ),
+                    controller: _titleCtrl,
+                    decoration: const InputDecoration(
+                      labelText: "Item Name",
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return "Title is required";
+                      }
+                      if (value.length > 50) {
+                        return "Max 50 characters allowed";
+                      }
+                      return null;
+                    }),
                 const SizedBox(height: 16),
                 Flexible(
                   child: TextFormField(
@@ -132,6 +138,10 @@ class _ItemFormBottomSheetState extends ConsumerState<ItemFormBottomSheet> {
                       labelText: "Price",
                       border: OutlineInputBorder(),
                     ),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      LengthLimitingTextInputFormatter(9), // max 99999
+                    ],
                     keyboardType: TextInputType.number,
                     validator: (v) =>
                         v == null || v.isEmpty ? "Required" : null,
@@ -144,6 +154,10 @@ class _ItemFormBottomSheetState extends ConsumerState<ItemFormBottomSheet> {
                     labelText: "Stock (Optional)",
                     border: OutlineInputBorder(),
                   ),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(9), // max 99999
+                  ],
                   keyboardType: TextInputType.number,
                 ),
                 const SizedBox(height: 16),

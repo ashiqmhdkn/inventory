@@ -12,6 +12,7 @@ class ItemProvider extends AsyncNotifier<List<Item>> {
   Future<bool> createItem({
     required String name,
     required double price,
+    required String id,
     int? quantity,
     String? image,
   }) async {
@@ -23,14 +24,14 @@ class ItemProvider extends AsyncNotifier<List<Item>> {
     try {
       final success = await createApiItem(
         Item(
-          id: "",
+          id: id,
           title: name,
           price: price,
           stock: quantity,
           image: image,
         ),
       );
-      print(success);
+
       if (success) {
         state = await AsyncValue.guard(() => getApiItems());
       }
@@ -42,13 +43,14 @@ class ItemProvider extends AsyncNotifier<List<Item>> {
   }
 
   // ---------------- UPDATE ----------------
-  Future<bool> updateItem({
+  Future<bool> EditItem({
     required String id,
     required String name,
     required double price,
     int? quantity,
     String? image,
   }) async {
+    print("item_provider updateItem called with id: $id, name: $name, price: $price, quantity: $quantity, image: $image");
     try {
       print("..........update..............");
       print(name);
@@ -77,9 +79,9 @@ class ItemProvider extends AsyncNotifier<List<Item>> {
   }
 
   // ---------------- DELETE ----------------
-  Future<bool> deleteItem(String id) async {
+  Future<bool> removeItem(String id) async {
     try {
-      final success = await deleteItem(id);
+      final success = await deleteApiItem(id);
 
       if (success) {
         state = const AsyncValue.loading();

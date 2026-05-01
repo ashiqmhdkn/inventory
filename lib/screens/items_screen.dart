@@ -136,14 +136,12 @@ class ItemsScreen extends ConsumerWidget {
                   "₹${item.price} | Qty: ${item.stock ?? 0}",
                 ),
 
-                trailing: IconButton(
-                  icon: const Icon(Icons.delete),
-                  onPressed: () {
-                    ref
-                        .read(itemProvider.notifier)
-                        .deleteItem(item.id);
-                  },
-                ),
+                // trailing: IconButton(
+                //   icon: const Icon(Icons.delete),
+                //   onPressed: () {
+                //     confirmDelete(context, ref, item);
+                //   },
+                // ),
               );
             },
           );

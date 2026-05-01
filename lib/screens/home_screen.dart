@@ -5,10 +5,10 @@ import 'package:flutter_inventory/screens/login_screen.dart';
 import 'package:flutter_inventory/utils/item_ui_helper.dart';
 import 'package:flutter_inventory/widgets/item_tile.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
 import '../providers/item_provider.dart';
 import '../screens/item_detail_screen.dart';
 import '../widgets/item_card.dart';
-import '../widgets/item_form_dialog.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -67,16 +67,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         //   builder: (_) => ItemFormBottomSheet(),
         // );
         await openItemFormBottomSheet(context);
+  String generateReferralCode() {
+    final Uuid _uuid = Uuid();
+    // Generate a UUID v4
+    String uuid = _uuid.v4();
+    // Optionally shorten and format the UUID for readability
+    return uuid; // e.g., A1B2C3D4
+  }
 
     if (result != null && mounted) {
       print(result.title);
       print(result.image);
       print(result.price);
       print(result.stock);
+      final newId = generateReferralCode();
+      print("Generated ID: $newId");
+
       await ref.read(itemProvider.notifier).createItem(
+            
             name: result.title,
             image: result.image,
+
             price: result.price,
+            id: newId,
             quantity: result.stock,
           );
     }
@@ -96,11 +109,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final result = await openItemFormBottomSheet(context,item:item);
 
     if (result != null && mounted) {
-      print(result.title);
-      print(result.image);
-      print(result.price);
-      print(result.stock);
-      await ref.read(itemProvider.notifier).updateItem(
+      await ref.read(itemProvider.notifier).EditItem(
             id: item.id,
             name: result.title,
             image: result.image,
@@ -111,7 +120,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   // ---------------- DELETE ----------------
-  Future<void> _confirmDelete(Item item) async {
+  Future<void> confirmDelete(Item item) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
@@ -132,7 +141,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 style: TextStyle(color: Color(0xFF555555))),
           ),
           TextButton(
-            onPressed: () async{await ref.read(itemProvider.notifier).deleteItem(item.id); 
+            onPressed: () async{await ref.read(itemProvider.notifier).removeItem(item.id); 
                             Navigator.pop(context, true);},
             child: const Text('Delete',
                 style: TextStyle(color: Color(0xFFf87171))),
@@ -142,7 +151,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
 
     if (confirmed == true) {
-      await ref.read(itemProvider.notifier).deleteItem(item.id);
+      await ref.read(itemProvider.notifier).removeItem(item.id);
     }
   }
 
@@ -263,7 +272,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               );
                             },
                             onEdit: () => _openEdit(item),
-                            onDelete: () => _confirmDelete(item),
+                            onDelete: () => confirmDelete(item),
                           )
                         : ItemTile(
                             item: item,

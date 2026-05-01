@@ -4,6 +4,7 @@ import 'package:flutter_inventory/utils/item_ui_helper.dart';
 import 'package:flutter_inventory/widgets/item_card.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
 import '../providers/item_provider.dart';
 import 'item_detail_screen.dart';
 import 'dart:io';
@@ -123,6 +124,7 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
       print(result.price);
       print(result.stock);
       await ref.read(itemProvider.notifier).createItem(
+            id: Uuid().v4(),
             name: result.title,
             image: result.image,
             price: result.price,
@@ -140,7 +142,7 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
       print(result.image);
       print(result.price);
       print(result.stock);
-      await ref.read(itemProvider.notifier).updateItem(
+      await ref.read(itemProvider.notifier).EditItem(
             id: item.id,
             name: result.title,
             image: result.image,
@@ -181,7 +183,7 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
     );
 
     if (confirmed == true) {
-      await ref.read(itemProvider.notifier).deleteItem(item.id);
+      await ref.read(itemProvider.notifier).removeItem(item.id);
     }
   }
 

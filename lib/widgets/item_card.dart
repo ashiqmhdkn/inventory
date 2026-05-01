@@ -92,45 +92,15 @@ class ItemCard extends StatelessWidget {
           ),
           IconButton(
             icon: const Icon(Icons.edit_rounded, color: Colors.white),
-            onPressed: onEdit,
+            onPressed: () => onEdit(),
           ),
           IconButton(
             icon: const Icon(Icons.delete_rounded, color: Color(0xFFf87171)),
-            onPressed: () => _confirmDelete(context),
+            onPressed: () => onDelete(),
           ),
         ],
       ),
     );
   }
 
-  void _confirmDelete(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: const Color(0xFF1e1e21),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title:
-            const Text('Remove item?', style: TextStyle(color: Colors.white)),
-        content: Text(
-          'Are you sure you want to delete ${item.title}?',
-          style: const TextStyle(color: Color(0xFF888888)),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel',
-                style: TextStyle(color: Color(0xFF555555))),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              onDelete();
-            },
-            child: const Text('Delete',
-                style: TextStyle(color: Color(0xFFf87171))),
-          ),
-        ],
-      ),
-    );
-  }
 }

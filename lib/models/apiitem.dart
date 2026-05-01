@@ -32,15 +32,15 @@ class Item {
     );
   }
 
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'title': title,
-      'image': image,
-      'price': price,
-      'stock': stock,
-    };
-  }
+Map<String, dynamic> toMap() {
+  return {
+    'id': id,
+    'name': title,
+    'image': image?.toString() ?? '',
+    'quantity': stock?.toInt() ?? '0',            // ✅ correct null handling
+    'price': price,            // ✅ correct + safe
+  };
+}
 
   factory Item.fromMap(Map<String, dynamic> map) {
     return Item(
@@ -48,7 +48,7 @@ class Item {
       title: map['name'],
       image: map['image'],
       price: (map['price'] ?? 0).toDouble(),
-      stock: map['stock'],
+      stock: map['quantity'],
     );
   }
 }

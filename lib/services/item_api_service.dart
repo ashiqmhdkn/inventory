@@ -29,14 +29,18 @@ print("getItems response: ");
 
 // ---------------- POST ----------------
 Future<bool> createApiItem(Item item) async {
-    print("------------------------------api call createItem(item)--------------------$item.id $item.name $item.price");
+    print("------------------------------api call createItem(item)--------------------${item.id} ${item.title} ${item.price}");
   final res = await http.post(
     Uri.parse('$baseUrl/items'),
-    headers: {'Content-Type': 'application/json'},
+    headers: {'Content-Type': 'application/json'
+    },
     body: jsonEncode(item.toMap()),
   );
   print("..........Create api..............");
   print(res.statusCode);
+  print("body: ${res.body}");
+  print("request body: ${jsonEncode(item.toMap())}");
+
   if (res.statusCode == 200 || res.statusCode == 201) {
     return true;
   } else {
@@ -46,7 +50,7 @@ Future<bool> createApiItem(Item item) async {
 
 // ---------------- PUT ----------------
 Future<bool> updateApiItem(Item item) async {
-        print("------------------------------api call createItem(item)--------------------$item.id $item.name $item.price");
+  print("------------------------------api call updateItem(item)--------------------${item.id} ${item.title} ${item.price}");
   final res = await http.put(
     Uri.parse('$baseUrl/items/${item.id}'),
     headers: {'Content-Type': 'application/json'},
@@ -54,6 +58,8 @@ Future<bool> updateApiItem(Item item) async {
   );
   print("..........Update api..............");
   print(res.statusCode);
+  print(res.body);
+
 
   if (res.statusCode == 200) {
     return true;
