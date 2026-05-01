@@ -35,15 +35,21 @@ class ItemCard extends StatelessWidget {
 
     return ListTile(
       onTap: onTap,
-      leading: CircleAvatar(
+      leading: Container(
+        width: 52,
+        height: 52,
+        decoration: BoxDecoration(
+        color: const Color(0xFF1a1a1c),
+        borderRadius: BorderRadius.circular(10),
+      ),
         child: item.image != null
             ? Image.file(
                 File(item.image!),
-                width: 60,
-                height: 60,
+                width: 52,
+                height: 52,
                 fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) =>
-                    const Icon(Icons.broken_image, color: Colors.grey),
+                    const Icon(Icons.image_outlined, color: Colors.grey),
               )
             : const Icon(Icons.image_not_supported),
       ),
@@ -55,14 +61,24 @@ class ItemCard extends StatelessWidget {
           color: Color(0xFFe8e8e8),
         ),
       ),
-      subtitle: Text(
-        'QTY: ${item.stock} \t•\t $stockLabel',
+      subtitle:
+        (item.stock != null)?
+        Text(
+        'QTY: ${item.stock} ',
         style: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w500,
           color: stockColor,
         ),
-      ),
+      ):
+      Text(
+         stockLabel,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+          color: stockColor,
+        ),
+      ), 
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [

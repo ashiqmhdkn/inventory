@@ -7,7 +7,7 @@ const String baseUrl = 'https://fruits.shaidmonu300.workers.dev';
 // ---------------- GET ----------------
 Future<List<Item>> getApiItems() async {
   final res = await http.get(Uri.parse('$baseUrl/items'));
-
+print("getItems response: ");
   if (res.statusCode == 200) {
     final data = jsonDecode(res.body);
 
@@ -29,6 +29,7 @@ Future<List<Item>> getApiItems() async {
 
 // ---------------- POST ----------------
 Future<bool> createApiItem(Item item) async {
+    print("------------------------------api call createItem(item)--------------------$item.id $item.name $item.price");
   final res = await http.post(
     Uri.parse('$baseUrl/items'),
     headers: {'Content-Type': 'application/json'},
@@ -45,6 +46,7 @@ Future<bool> createApiItem(Item item) async {
 
 // ---------------- PUT ----------------
 Future<bool> updateApiItem(Item item) async {
+        print("------------------------------api call createItem(item)--------------------$item.id $item.name $item.price");
   final res = await http.put(
     Uri.parse('$baseUrl/items/${item.id}'),
     headers: {'Content-Type': 'application/json'},

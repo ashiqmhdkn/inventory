@@ -3,14 +3,15 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter_inventory/models/apiitem.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
 
 class ItemFormBottomSheet extends ConsumerStatefulWidget {
   final Item? item;
 
-  ItemFormBottomSheet({
-    super.key,
+  const ItemFormBottomSheet({
+    Key? key,
     this.item,
-  });
+  }) : super(key: key);
 
   @override
   ConsumerState<ItemFormBottomSheet> createState() =>
@@ -73,11 +74,10 @@ class _ItemFormBottomSheetState extends ConsumerState<ItemFormBottomSheet> {
     if (!_formKey.currentState!.validate()) {
       return;
     }
-
     Navigator.pop(
       context,
       Item(
-        id: "",
+        id: widget.item?.id ?? const Uuid().v4(),
         price: double.parse(_priceCtrl.text.trim()),
         title: _titleCtrl.text.trim(),
         image: itemImage,
@@ -87,26 +87,6 @@ class _ItemFormBottomSheetState extends ConsumerState<ItemFormBottomSheet> {
       ),
     );
 
-    // Navigator.pop(context, {
-    //   Item(
-    //     id: "",
-    //     isMarket: true,
-    //     price: double.parse(_priceCtrl.text.trim()),
-    //     title: _titleCtrl.text.trim(),
-    //     image: itemImage,
-    //     mrpPrice: mrpText.isEmpty ? null : double.parse(mrpText),
-    //     stock: _stockCtrl.text.trim().isEmpty
-    //         ? null
-    //         : int.parse(_stockCtrl.text.trim()),
-    //   )
-    // 'title': _titleCtrl.text.trim(),
-    // 'image': itemImage,
-    // 'price': double.parse(_priceCtrl.text.trim()),
-    // 'mrpPrice': mrpText.isEmpty ? null : double.parse(mrpText),
-    // 'stock': _stockCtrl.text.trim().isEmpty
-    //     ? null
-    //     : int.parse(_stockCtrl.text.trim()),
-    // 'isMarket': true,
   }
 
   @override
@@ -114,13 +94,13 @@ class _ItemFormBottomSheetState extends ConsumerState<ItemFormBottomSheet> {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
     return SafeArea(
-      child: Padding(
-        padding: EdgeInsets.only(
-          bottom: bottomInset,
-          left: 16,
-          right: 16,
-          top: 16,
-        ),
+      child:  Padding(
+  padding: EdgeInsets.only(
+    left: 10,
+    top: 10,
+    right: 10,
+    bottom: MediaQuery.of(context).viewInsets.bottom,
+  ),
         child: SingleChildScrollView(
           child: Form(
             key: _formKey,

@@ -38,39 +38,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-// import 'package:flutter/material.dart';
-// import 'package:flutter_inventory/providers/item_provider.dart';
-// import 'package:flutter_riverpod/flutter_riverpod.dart';
-// import 'package:hive_flutter/hive_flutter.dart';
-// import 'models/item.dart';
-// import 'screens/main_shell.dart';
-
-// void main() async {
-//   WidgetsFlutterBinding.ensureInitialized();
-
-//   // await Hive.initFlutter();
-//   // Hive.registerAdapter(ItemAdapter());
-//   // final box = await Hive.openBox<Item>('items');
-
-//   runApp(
-//     const ProviderScope(
-//       // overrides: [
-//       //   hiveBoxProvider.overrideWithValue(box), // ✅ inject
-//       // ],
-//       child: const MyApp(),
-//     ),
-//   );
-// }
-
-// class MyApp extends StatelessWidget {
-//   const MyApp({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       debugShowCheckedModeBanner: false,
-//       theme: ThemeData.dark(),
-//       home: const MainShell(),
-//     );
-//   }
-// }

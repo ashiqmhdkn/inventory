@@ -83,8 +83,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   // ---------------- EDIT ----------------
+  // Future<void> _openEdit(Item item) async {
+  //   final result = await showModalBottomSheet<Item>(
+  //     context: context,
+  //     isScrollControlled: true,
+  //     builder: (_) => ItemFormBottomSheet(item: item),
+  //   );
+    
+  // }
+
   Future<void> _openEdit(Item item) async {
-    final result = await openItemFormBottomSheet(context, item: item);
+    final result = await openItemFormBottomSheet(context,item:item);
 
     if (result != null && mounted) {
       print(result.title);
@@ -96,29 +105,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             name: result.title,
             image: result.image,
             price: result.price,
-            quantity: result.stock,
+            quantity: result.stock
           );
     }
   }
-
-  // Future<void> _openEdit(Item item) async {
-  //   final result = await showModalBottomSheet<Item>(
-  //     context: context,
-  //     isScrollControlled: true,
-  //     builder: (_) => ItemFormBottomSheet(item: item),
-  //   );
-
-  //   if (result != null && mounted) {
-  //     await ref.read(itemsProvider.notifier).updateItem(
-  //           id: item.id,
-  //           title: result.title,
-  //           imagePath: result.image,
-  //           price: result.price,
-  //           stock: result.stock,
-  //           isMarket: result.isMarket,
-  //         );
-  //   }
-  // }
 
   // ---------------- DELETE ----------------
   Future<void> _confirmDelete(Item item) async {
@@ -142,7 +132,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 style: TextStyle(color: Color(0xFF555555))),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () async{await ref.read(itemProvider.notifier).deleteItem(item.id); 
+                            Navigator.pop(context, true);},
             child: const Text('Delete',
                 style: TextStyle(color: Color(0xFFf87171))),
           ),
