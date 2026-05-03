@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_inventory/providers/auth_provider.dart';
 import 'package:flutter_inventory/models/apiitem.dart';
@@ -20,7 +22,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _query = '';
-  String _sortBy = 'name'; // 'name' | 'price_asc' | 'price_desc'
+  String _sortBy = 'name';
 
   @override
   void dispose() {
@@ -34,6 +36,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     Future.microtask(() {
       ref.read(itemProvider.notifier).build();
     });
+     
   }
 
   // ─── Sort ────────────────────────────────────────────────────────────────

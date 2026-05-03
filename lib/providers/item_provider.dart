@@ -103,3 +103,4 @@ class ItemProvider extends AsyncNotifier<List<Item>> {
 
 final itemProvider =
     AsyncNotifierProvider<ItemProvider, List<Item>>(() => ItemProvider());
+

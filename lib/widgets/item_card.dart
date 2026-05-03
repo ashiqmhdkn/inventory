@@ -34,6 +34,11 @@ class ItemCard extends StatelessWidget {
             : const Color(0xFF34d399);
 
     return ListTile(
+      splashColor: Colors.white10,
+    shape: RoundedRectangleBorder(
+    side: BorderSide(color: isOutOfStock ? const Color.fromARGB(255, 12, 10, 10) : const Color.fromARGB(255, 28, 29, 28), width: 1),
+    borderRadius: BorderRadius.circular(8),
+  ),
       onTap: onTap,
       leading: Container(
         width: 52,
@@ -91,10 +96,21 @@ class ItemCard extends StatelessWidget {
             ),
           ),
           IconButton(
+            style: IconButton.styleFrom(
+          // backgroundColor: Theme.of(context).colorScheme.primary, //
+          // The "inner" circle color
+          
+           shape: const CircleBorder( side: BorderSide(strokeAlign:BorderSide.strokeAlignInside, color: Colors.white)), // Forces perfect roundness
+           padding: const EdgeInsets.all(8), // Adjusts size of the inner circle
+           ),
             icon: const Icon(Icons.edit_rounded, color: Colors.white),
             onPressed: () => onEdit(),
           ),
           IconButton(
+            style: IconButton.styleFrom(
+              shape: const CircleBorder( side: BorderSide(strokeAlign:BorderSide.strokeAlignInside, color: Color(0xFFf87171))), // Forces perfect roundness
+           padding: const EdgeInsets.all(8),
+            ),
             icon: const Icon(Icons.delete_rounded, color: Color(0xFFf87171)),
             onPressed: () => onDelete(),
           ),

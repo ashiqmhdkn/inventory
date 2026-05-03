@@ -3,6 +3,7 @@ import 'package:flutter_inventory/providers/auth_provider.dart';
 import 'package:flutter_inventory/screens/login_screen.dart';
 import 'package:flutter_inventory/utils/item_ui_helper.dart';
 import 'package:flutter_inventory/widgets/item_card.dart';
+import 'package:flutter_inventory/widgets/item_tile.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
@@ -440,7 +441,7 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
                           onEdit: () => _openEdit(item),
                           onDelete: () => _confirmDelete(item),
                         )
-                      : _MarketItemTile(
+                      : ItemTile(
                           item: item,
                           onTap: () => Navigator.push(
                             context,
@@ -470,115 +471,115 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
   }
 }
 
-// ─── Market Item Tile ────────────────────────────────────────────────────────
+// // ─── Market Item Tile ────────────────────────────────────────────────────────
 
-class _MarketItemTile extends StatelessWidget {
-  final Item item;
-  final VoidCallback onTap;
+// class _MarketItemTile extends StatelessWidget {
+//   final Item item;
+//   final VoidCallback onTap;
 
-  const _MarketItemTile({required this.item, required this.onTap});
+//   const _MarketItemTile({required this.item, required this.onTap});
 
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: const Color(0xFF161618),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: const Color(0xFF222224)),
-        ),
-        child: Row(
-          children: [
-            // Thumbnail
-            ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: (item.image != null && item.image!.isNotEmpty)
-                  ? Image.file(
-                      File(item.image!),
-                      width: 52,
-                      height: 52,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _PlaceholderBox(),
-                    )
-                  : _PlaceholderBox(),
-            ),
-            const SizedBox(width: 14),
+//   @override
+//   Widget build(BuildContext context) {
+//     return GestureDetector(
+//       onTap: onTap,
+//       child: Container(
+//         margin: const EdgeInsets.only(bottom: 8),
+//         padding: const EdgeInsets.all(14),
+//         decoration: BoxDecoration(
+//           color: const Color(0xFF161618),
+//           borderRadius: BorderRadius.circular(14),
+//           border: Border.all(color: const Color(0xFF222224)),
+//         ),
+//         child: Row(
+//           children: [
+//             // Thumbnail
+//             // ClipRRect(
+//             //   borderRadius: BorderRadius.circular(10),
+//             //   child: (item.image != null && item.image!.isNotEmpty)
+//             //       ? Image.file(
+//             //           File(item.image!),
+//             //           width: 52,
+//             //           height: 52,
+//             //           fit: BoxFit.cover,
+//             //           errorBuilder: (_, __, ___) => _PlaceholderBox(),
+//             //         )
+//             //       : _PlaceholderBox(),
+//             // ),
+//             const SizedBox(width: 14),
 
-            // Info
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    item.title,
-                    style: const TextStyle(
-                      color: Color(0xFFf0f0f0),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      // Cost price
-                      Text(
-                        'Stock: ${item.stock ?? 0}',
-                        style: const TextStyle(
-                            color: Color(0xFF555555), fontSize: 11),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        (item.stock ?? 0) > 0 ? 'In stock' : 'Out',
-                        style: TextStyle(
-                          color: (item.stock ?? 0) > 0
-                              ? const Color(0xFF444444)
-                              : const Color(0xFFf87171),
-                          fontSize: 10,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-//price
-            Text(
-              'Price: ${item.price.toStringAsFixed(0)}',
-              style: const TextStyle(
-                color: Color(0xFFf0f0f0),
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+//             // Info
+//             Expanded(
+//               child: Column(
+//                 crossAxisAlignment: CrossAxisAlignment.start,
+//                 children: [
+//                   Text(
+//                     item.title,
+//                     style: const TextStyle(
+//                       color: Color(0xFFf0f0f0),
+//                       fontSize: 14,
+//                       fontWeight: FontWeight.w500,
+//                     ),
+//                     maxLines: 1,
+//                     overflow: TextOverflow.ellipsis,
+//                   ),
+//                   const SizedBox(height: 4),
+//                   Row(
+//                     children: [
+//                       // Cost price
+//                       Text(
+//                         'Stock: ${item.stock ?? 0}',
+//                         style: const TextStyle(
+//                             color: Color(0xFF555555), fontSize: 11),
+//                       ),
+//                       const SizedBox(width: 8),
+//                       Text(
+//                         (item.stock ?? 0) > 0 ? 'In stock' : 'Out',
+//                         style: TextStyle(
+//                           color: (item.stock ?? 0) > 0
+//                               ? const Color(0xFF444444)
+//                               : const Color(0xFFf87171),
+//                           fontSize: 10,
+//                         ),
+//                       ),
+//                     ],
+//                   ),
+//                 ],
+//               ),
+//             ),
+// //price
+//             Text(
+//               'Price: ${item.price.toStringAsFixed(0)}',
+//               style: const TextStyle(
+//                 color: Color(0xFFf0f0f0),
+//                 fontSize: 13,
+//                 fontWeight: FontWeight.w600,
+//               ),
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }
 
-class _PlaceholderBox extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 52,
-      height: 52,
-      decoration: BoxDecoration(
-        color: const Color(0xFF1a1a1c),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child:
-          const Icon(Icons.image_outlined, size: 22, color: Color(0xFF333333)),
-    );
-  }
-}
+// class _PlaceholderBox extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     return Container(
+//       width: 52,
+//       height: 52,
+//       decoration: BoxDecoration(
+//         color: const Color(0xFF1a1a1c),
+//         borderRadius: BorderRadius.circular(10),
+//       ),
+//       child:
+//           const Icon(Icons.image_outlined, size: 22, color: Color(0xFF333333)),
+//     );
+//   }
+// }
 
-// ─── Sort Option ─────────────────────────────────────────────────────────────
+// // ─── Sort Option ─────────────────────────────────────────────────────────────
 
 class _SortOption extends StatelessWidget {
   final String label;
