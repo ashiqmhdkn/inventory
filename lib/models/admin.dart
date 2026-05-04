@@ -10,8 +10,12 @@ class Admin extends HiveObject {
   @HiveField(1)
   String passwordHash;
 
+  @HiveField(2)
+  bool isLoggedIn;
+
   Admin({
     required this.username,
     required this.passwordHash,
+    this.isLoggedIn = false,
   });
 }

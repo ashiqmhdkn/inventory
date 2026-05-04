@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_inventory/models/apiitem.dart';
@@ -183,12 +184,13 @@ class _ItemFormBottomSheetState extends ConsumerState<ItemFormBottomSheet> {
                             children: [
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(12),
-                                child: Image.file(
-                                  File(itemImage),
-                                  width: double.infinity,
-                                  height: double.infinity,
-                                  fit: BoxFit.cover,
-                                ),
+                                child: _buildImagePreview(),
+                                //  Image.file(
+                                //   File(itemImage),
+                                //   width: double.infinity,
+                                //   height: double.infinity,
+                                //   fit: BoxFit.cover,
+                                // ),
                               ),
                               Positioned(
                                 top: 8,
@@ -227,5 +229,32 @@ class _ItemFormBottomSheetState extends ConsumerState<ItemFormBottomSheet> {
         ),
       ),
     );
+  }
+
+  Widget _buildImagePreview() {
+    // Check if it's a network URL
+    final isNetwork = itemImage.startsWith('http');
+
+    if (isNetwork) {
+      return CachedNetworkImage(
+        imageUrl: itemImage,
+        width: double.infinity,
+        height: double.infinity,
+        fit: BoxFit.cover,
+        placeholder: (context, url) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+        errorWidget: (context, url, error) =>
+            const Icon(Icons.image_outlined, color: Colors.grey),
+      );
+    } else {
+      // return Icon(Icons.image_outlined, color: Colors.grey);
+      return Image.file(
+        File(itemImage),
+        width: double.infinity,
+        height: double.infinity,
+        fit: BoxFit.cover,
+      );
+    }
   }
 }

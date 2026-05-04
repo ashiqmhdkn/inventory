@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inventory/models/apiitem.dart';
 
@@ -15,7 +16,7 @@ class ItemDetailScreen extends StatelessWidget {
 
   Color _stockColor(BuildContext context) {
     if (item.stock == 0) return const Color(0xFFE24B4A);
-   if ((item.stock ?? 0) <= 5) return const Color(0xFFEF9F27);
+    if ((item.stock ?? 0) <= 5) return const Color(0xFFEF9F27);
     return const Color(0xFF1D9E75);
   }
 
@@ -33,14 +34,16 @@ class ItemDetailScreen extends StatelessWidget {
             AspectRatio(
               aspectRatio: 16 / 9,
               child: item.image != null
-    ?Image.file(
-          File(item.image!),
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
-                  color: Colors.grey.shade200,
-                  child: const Icon(Icons.image, size: 60, color: Colors.grey),
-                ),
-              ): const Icon(Icons.image_not_supported, size: 80),
+                  ? _buildImage(item.image!
+                      // Image.file(
+                      //       File(item.image!),
+                      //             fit: BoxFit.cover,
+                      //             errorBuilder: (_, __, ___) => Container(
+                      //               color: Colors.grey.shade200,
+                      //               child: const Icon(Icons.image, size: 60, color: Colors.grey),
+                      //             ),
+                      )
+                  : const Icon(Icons.image_not_supported, size: 80),
             ),
             Padding(
               padding: const EdgeInsets.all(20),
@@ -118,9 +121,38 @@ class _InfoRow extends StatelessWidget {
                 fontWeight: FontWeight.w500)),
         const Spacer(),
         Text(value,
-            style: const TextStyle(
-                fontSize: 14, fontWeight: FontWeight.w600)),
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
       ],
+    );
+  }
+}
+
+Widget _buildImage(String path) {
+  final isNetwork = path.startsWith('http');
+
+  if (isNetwork) {
+    return CachedNetworkImage(
+      imageUrl: path,
+      fit: BoxFit.cover,
+      placeholder: (context, url) => Container(
+        color: Colors.grey.shade200,
+        child: const Center(
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+      ),
+      errorWidget: (context, url, error) => Container(
+        color: Colors.grey.shade200,
+        child: const Icon(Icons.image, size: 60, color: Colors.grey),
+      ),
+    );
+  } else {
+    return Image.file(
+      File(path),
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => Container(
+        color: Colors.grey.shade200,
+        child: const Icon(Icons.image, size: 60, color: Colors.grey),
+      ),
     );
   }
 }

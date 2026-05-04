@@ -19,17 +19,20 @@ class AdminAdapter extends TypeAdapter<Admin> {
     return Admin(
       username: fields[0] as String,
       passwordHash: fields[1] as String,
+      isLoggedIn: fields[2] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, Admin obj) {
     writer
-      ..writeByte(2)
+      ..writeByte(3)
       ..writeByte(0)
       ..write(obj.username)
       ..writeByte(1)
-      ..write(obj.passwordHash);
+      ..write(obj.passwordHash)
+      ..writeByte(2)
+      ..write(obj.isLoggedIn);
   }
 
   @override

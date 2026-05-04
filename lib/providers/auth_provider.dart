@@ -35,10 +35,26 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final admin = Admin(
         username: "admin",
         passwordHash: hashPassword("1234"),
+        isLoggedIn: false,
       );
       await box.put("admin", admin);
+    } else {
+      // Restore login state
+      final admin = box.get("admin");
+      if (admin != null && admin.isLoggedIn) {
+        state = state.copyWith(isAdmin: true);
+      }
     }
   }
+  // Future<void> _initAdmin() async {
+  //   if (box.isEmpty) {
+  //     final admin = Admin(
+  //       username: "admin",
+  //       passwordHash: hashPassword("1234"),
+  //     );
+  //     await box.put("admin", admin);
+  //   }
+  // }
 
   // LOGIN
   bool login(String username, String password) {
@@ -50,6 +66,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
         admin.passwordHash == hashPassword(password);
 
     if (success) {
+      admin.isLoggedIn = true; // ✅ persist
+      admin.save();
       state = state.copyWith(isAdmin: true);
     }
 
@@ -58,6 +76,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   // LOGOUT
   void logout() {
+    final admin = box.get("admin");
+
+    if (admin != null) {
+      admin.isLoggedIn = false; // ✅ persist
+      admin.save();
+    }
     state = state.copyWith(isAdmin: false);
   }
 
@@ -67,8 +91,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
     if (admin != null) {
       admin.passwordHash = hashPassword(newPassword);
+      admin.isLoggedIn = false; // force logout
       await admin.save();
     }
+    state = state.copyWith(isAdmin: false);
   }
 
   // RESET PASSWORD
